@@ -18,6 +18,9 @@ XML, which we fetch selectively (HTTP range requests) from the IRS bulk ZIPs.
 | 2. Enrich  | `enrich.py`    | Adds **employee count**, volunteers, IT spend from IRS 990 XML. Optional but required for the 40–50 employee filter. |
 | 3. Explore | `app.py`       | Streamlit UI with live sliders/filters over the cache. Re-slice infinitely; export CSV. |
 
+> **How the current dataset was built and what "4,870 orgs" means:** see
+> [METHODOLOGY.md](METHODOLOGY.md).
+
 ## Setup
 
 ```bash

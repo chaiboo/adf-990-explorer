@@ -21,7 +21,7 @@ import requests
 import db
 
 API = "https://projects.propublica.org/nonprofits/api/v2"
-HEADERS = {"User-Agent": "adf-bd-explorer/1.0 (research; contact rb12295@gmail.com)"}
+HEADERS = {"User-Agent": "adf-990-explorer/1.0 (research use)"}
 PAGE_SIZE = 25  # fixed by the API
 
 

@@ -27,7 +27,7 @@ from remotezip import RemoteZip
 
 import db
 
-HEADERS = {"User-Agent": "adf-bd-explorer/1.0 (research; contact rb12295@gmail.com)"}
+HEADERS = {"User-Agent": "adf-990-explorer/1.0 (research use)"}
 DOWNLOADS_PAGE = "https://www.irs.gov/charities-non-profits/form-990-series-downloads"
 ZIP_HREF_RE = re.compile(r'href="(https://apps\.irs\.gov/pub/epostcard/990/xml/(\d{4})/[^"]+\.zip)"')
 
