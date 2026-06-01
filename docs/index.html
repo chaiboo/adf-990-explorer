@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ADF · Midwest 990 Explorer</title>
+<style>
+  :root{
+    --bg:#f4f6f8; --panel:#ffffff; --ink:#13233a; --muted:#5d7088;
+    --line:#e2e8f0; --accent:#0d7d7b; --accent2:#0a5d5b; --chip:#e8f3f2;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       color:var(--ink);background:var(--bg)}
+  header{background:linear-gradient(120deg,#0d7d7b,#0a5d5b);color:#fff;padding:18px 24px}
+  header h1{margin:0;font-size:20px;letter-spacing:.2px}
+  header p{margin:4px 0 0;font-size:13px;color:#cdeae9;max-width:780px}
+  .caveat{background:#fff7e6;border-bottom:1px solid #f0d9a0;color:#7a5b13;
+          padding:8px 24px;font-size:12.5px}
+  .caveat a{color:#7a5b13}
+  .wrap{display:flex;gap:18px;padding:18px 24px;align-items:flex-start}
+  .filters{flex:0 0 264px;background:var(--panel);border:1px solid var(--line);
+           border-radius:10px;padding:16px;position:sticky;top:18px}
+  .filters h2{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);
+             margin:18px 0 8px}
+  .filters h2:first-child{margin-top:0}
+  label{display:block;font-size:12px;color:var(--muted);margin:8px 0 3px}
+  input[type=text],input[type=number],select{width:100%;padding:7px 8px;border:1px solid var(--line);
+    border-radius:7px;font-size:13px;background:#fff;color:var(--ink)}
+  .row2{display:flex;gap:8px}.row2>div{flex:1}
+  .chk{display:flex;align-items:center;gap:7px;margin-top:10px;font-size:13px;color:var(--ink)}
+  .chk input{width:auto;margin:0}
+  select[multiple]{height:104px}
+  button{cursor:pointer;border:none;border-radius:7px;font-size:13px;font-weight:600}
+  .reset{background:var(--chip);color:var(--accent2);padding:9px;width:100%;margin-top:16px}
+  .main{flex:1;min-width:0}
+  .bar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  .metric{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+          padding:10px 14px;min-width:120px}
+  .metric .n{font-size:21px;font-weight:700;color:var(--accent2)}
+  .metric .l{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+  .dl{margin-left:auto;background:var(--accent);color:#fff;padding:10px 16px}
+  .tablewrap{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+             overflow:auto;max-height:calc(100vh - 230px)}
+  table{border-collapse:collapse;width:100%;font-size:12.5px}
+  thead th{position:sticky;top:0;background:#f0f4f6;color:var(--muted);text-align:left;
+           padding:9px 10px;border-bottom:1px solid var(--line);cursor:pointer;white-space:nowrap}
+  thead th:hover{color:var(--accent2)}
+  th.sorted::after{content:" ▾";color:var(--accent)}
+  th.sorted.asc::after{content:" ▴"}
+  td{padding:8px 10px;border-bottom:1px solid #eef2f5;white-space:nowrap}
+  tbody tr:hover{background:#f6fbfb}
+  td.name{white-space:normal;min-width:200px;font-weight:600}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  a{color:var(--accent)}
+  .more{padding:10px;text-align:center;color:var(--muted);font-size:12px}
+  .foot{padding:6px 24px 24px;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Applied Data Fellowship · Midwest Nonprofit 990 Explorer</h1>
+  <p>501(c)(3) charities across 12 Midwest states, with employee count, finances, IT spend
+     and website pulled from IRS Form 990 filings. Filter live; export what you select.</p>
+</header>
+<div class="caveat">
+  Exploratory dataset — a broad sample, not a vetted lead list or a census. See
+  <a href="https://github.com/chaiboo/adf-990-explorer/blob/main/METHODOLOGY.md" target="_blank">METHODOLOGY.md</a>
+  for how it was built, sampling caveats (MI &amp; MO under-sampled), and field definitions.
+</div>
+
+<div class="wrap">
+  <aside class="filters">
+    <h2>Find</h2>
+    <label>Name contains</label>
+    <input type="text" id="q" placeholder="e.g. food bank">
+    <label>Website domain contains</label>
+    <input type="text" id="dom" placeholder="e.g. .org">
+
+    <h2>Classify</h2>
+    <label>State (⌘/Ctrl-click for several)</label>
+    <select id="states" multiple></select>
+    <label>NTEE major group</label>
+    <select id="ntee" multiple></select>
+
+    <h2>People</h2>
+    <div class="row2"><div><label>Employees min</label><input type="number" id="empMin" placeholder="40"></div>
+      <div><label>max</label><input type="number" id="empMax" placeholder="50"></div></div>
+
+    <h2>Money</h2>
+    <div class="row2"><div><label>Revenue min $</label><input type="number" id="revMin"></div>
+      <div><label>max $</label><input type="number" id="revMax"></div></div>
+    <label>Min IT spend $</label><input type="number" id="itMin">
+
+    <label class="chk"><input type="checkbox" id="hasEmp"> Only with employee data</label>
+    <label class="chk"><input type="checkbox" id="hasWeb"> Only with a website</label>
+
+    <button class="reset" id="reset">Reset filters</button>
+  </aside>
+
+  <main class="main">
+    <div class="bar">
+      <div class="metric"><div class="n" id="mCount">—</div><div class="l">Matching orgs</div></div>
+      <div class="metric"><div class="n" id="mRev">—</div><div class="l">Median revenue</div></div>
+      <div class="metric"><div class="n" id="mEmp">—</div><div class="l">Median employees</div></div>
+      <button class="dl" id="dl">⬇ Download CSV</button>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr id="head"></tr></thead>
+        <tbody id="body"></tbody>
+      </table>
+      <div class="more" id="more"></div>
+    </div>
+  </main>
+</div>
+<div class="foot" id="foot"></div>
+
+<script>
+const NTEE={1:"1 · Arts & Culture",2:"2 · Education",3:"3 · Environment & Animals",
+  4:"4 · Health",5:"5 · Human Services",6:"6 · International",7:"7 · Public/Societal Benefit",
+  8:"8 · Religion",9:"9 · Membership Benefit",10:"10 · Unknown"};
+// table columns: [data key, header, type]
+const COLS=[["name","Organization","name"],["website","Website","web"],["city","City","t"],
+  ["state","St","t"],["ntee_code","NTEE","t"],["emp_count","Emp","n"],["volunteers","Vol","n"],
+  ["totrevenue","Revenue","m"],["totfuncexpns","Expenses","m"],["infotech_amt","IT spend","m"],
+  ["totassetsend","Assets","m"],["pct_compnsatncurrofcr","Officer comp %","p"],
+  ["tax_year","Yr","t"],["pdf_url","990","pdf"]];
+const MAX_ROWS=600;
+let DATA=[], idx={}, sortKey="totrevenue", sortAsc=false;
+
+const usd=v=>v==null?"":"$"+Math.round(v).toLocaleString();
+const fmt={t:v=>v??"",n:v=>v==null?"":v.toLocaleString(),m:usd,
+  p:v=>v==null?"":(v*100).toFixed(1)+"%",
+  web:v=>v?`<a href="https://${v}" target="_blank" rel="noopener">${v}</a>`:"",
+  pdf:v=>v?`<a href="${v}" target="_blank" rel="noopener">PDF</a>`:"",
+  name:v=>v??""};
+const median=a=>{a=a.filter(x=>x!=null).sort((x,y)=>x-y);if(!a.length)return null;
+  const m=Math.floor(a.length/2);return a.length%2?a[m]:(a[m-1]+a[m])/2;};
+
+fetch("data.json").then(r=>r.json()).then(d=>{
+  d.columns.forEach((c,i)=>idx[c]=i);
+  DATA=d.rows;
+  // populate selects
+  const states=[...new Set(DATA.map(r=>r[idx.state]))].sort();
+  document.getElementById("states").innerHTML=states.map(s=>`<option>${s}</option>`).join("");
+  const majors=[...new Set(DATA.map(r=>r[idx.ntee_major]).filter(x=>x!=null))].sort((a,b)=>a-b);
+  document.getElementById("ntee").innerHTML=majors.map(m=>`<option value="${m}">${NTEE[m]||m}</option>`).join("");
+  // header
+  document.getElementById("head").innerHTML=COLS.map(c=>`<th data-k="${c[0]}">${c[1]}</th>`).join("");
+  document.querySelectorAll("th").forEach(th=>th.onclick=()=>{
+    const k=th.dataset.k; if(sortKey===k)sortAsc=!sortAsc; else{sortKey=k;sortAsc=false;} render();});
+  document.getElementById("foot").textContent=
+    `${DATA.length.toLocaleString()} organizations · source: ${d.source} · generated ${d.generated}`;
+  ["q","dom","empMin","empMax","revMin","revMax","itMin"].forEach(id=>
+    document.getElementById(id).oninput=render);
+  ["states","ntee","hasEmp","hasWeb"].forEach(id=>document.getElementById(id).onchange=render);
+  document.getElementById("reset").onclick=()=>{
+    document.querySelectorAll("input").forEach(i=>i.type==="checkbox"?i.checked=false:i.value="");
+    [...document.getElementById("states").options].forEach(o=>o.selected=false);
+    [...document.getElementById("ntee").options].forEach(o=>o.selected=false);render();};
+  document.getElementById("dl").onclick=downloadCSV;
+  render();
+});
+
+function selected(id){return [...document.getElementById(id).selectedOptions].map(o=>o.value);}
+function val(id){const v=document.getElementById(id).value;return v===""?null:parseFloat(v);}
+
+function filtered(){
+  const q=document.getElementById("q").value.trim().toLowerCase();
+  const dom=document.getElementById("dom").value.trim().toLowerCase();
+  const sts=selected("states"), nts=selected("ntee").map(Number);
+  const eMin=val("empMin"),eMax=val("empMax"),rMin=val("revMin"),rMax=val("revMax"),iMin=val("itMin");
+  const hasEmp=document.getElementById("hasEmp").checked, hasWeb=document.getElementById("hasWeb").checked;
+  return DATA.filter(r=>{
+    if(q && !String(r[idx.name]||"").toLowerCase().includes(q))return false;
+    if(dom && !String(r[idx.website]||"").toLowerCase().includes(dom))return false;
+    if(sts.length && !sts.includes(r[idx.state]))return false;
+    if(nts.length && !nts.includes(r[idx.ntee_major]))return false;
+    const e=r[idx.emp_count];
+    if(hasEmp && e==null)return false;
+    if(eMin!=null && (e==null||e<eMin))return false;
+    if(eMax!=null && (e==null||e>eMax))return false;
+    const rev=r[idx.totrevenue];
+    if(rMin!=null && (rev==null||rev<rMin))return false;
+    if(rMax!=null && (rev==null||rev>rMax))return false;
+    if(iMin!=null && (r[idx.infotech_amt]==null||r[idx.infotech_amt]<iMin))return false;
+    if(hasWeb && !r[idx.website])return false;
+    return true;
+  });
+}
+
+function render(){
+  let rows=filtered();
+  const k=idx[sortKey];
+  rows=rows.slice().sort((a,b)=>{
+    let x=a[k],y=b[k];
+    if(x==null)return 1; if(y==null)return -1;
+    if(typeof x==="string")return sortAsc?(""+x).localeCompare(y):(""+y).localeCompare(x);
+    return sortAsc?x-y:y-x;});
+  document.getElementById("mCount").textContent=rows.length.toLocaleString();
+  document.getElementById("mRev").textContent=usd(median(rows.map(r=>r[idx.totrevenue])))||"—";
+  const me=median(rows.map(r=>r[idx.emp_count]));
+  document.getElementById("mEmp").textContent=me==null?"—":Math.round(me).toLocaleString();
+  document.querySelectorAll("th").forEach(th=>{th.classList.toggle("sorted",th.dataset.k===sortKey);
+    th.classList.toggle("asc",th.dataset.k===sortKey&&sortAsc);});
+  const body=document.getElementById("body");
+  body.innerHTML=rows.slice(0,MAX_ROWS).map(r=>"<tr>"+COLS.map(c=>{
+    const t=c[2], v=r[idx[c[0]]];
+    const cls=t==="name"?"name":(["n","m","p"].includes(t)?"num":"");
+    return `<td class="${cls}">${fmt[t](v)}</td>`;}).join("")+"</tr>").join("");
+  document.getElementById("more").textContent=
+    rows.length>MAX_ROWS?`Showing first ${MAX_ROWS} of ${rows.length.toLocaleString()} — refine filters or download the full CSV.`:"";
+  window._rows=rows;
+}
+
+function downloadCSV(){
+  const rows=window._rows||filtered();
+  const keys=COLS.map(c=>c[0]);
+  const esc=v=>{v=v==null?"":String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const csv=[keys.join(",")].concat(rows.map(r=>keys.map(kk=>esc(r[idx[kk]])).join(","))).join("\n");
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+  a.download="adf_midwest_filtered.csv";a.click();
+}
+</script>
+</body>
+</html>
