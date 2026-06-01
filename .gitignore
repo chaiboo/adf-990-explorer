@@ -1,0 +1,11 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Local data cache (560MB+, rebuildable via collector.py + enrich.py)
+*.db
+
+# Generated outputs
+*.csv
+*.log
